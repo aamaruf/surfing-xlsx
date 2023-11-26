@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Read Excel File</title>
+  </head>
+  <body><center>
+  <h1>Surfing Through XLSX Files</h1>
+  <h4>A tool from A A Maruf with ❤️</h4>
+  <br><br>
+    <input type="file" id="file-input">
+    <br><br>
+    <input id="search-input" type="text" placeholder="Search...">
+    <button id="search-button">Search</button>
+    <br>
+    <h4 id="data-show-msg"></h4>
+    <button style="display:none;" id="create-excel-button">Create New File With Result</button>
+    <br>
+    <table id="table"></table>
+    </center>
+    <script src="xlsx.full.min.js"></script>
+    <script>
+      const handleFile = (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          displayData(rows);
+        };
+        reader.readAsArrayBuffer(file);
+      };
+      const displayData = (data) => {
+      
+document.getElementById('data-show-msg').innerHTML="SHOWING DATA FROM UPLOADED FILE"
+        const table = document.getElementById('table');
+        table.innerHTML = '';
+        for (const row of data) {
+          const tr = document.createElement('tr');
+          for (const cell of row) {
+            const td = document.createElement('td');
+            td.innerText = cell;
+            tr.appendChild(td);
+          }
+          table.appendChild(tr);
+        }
+      };
+      
+      const searchResults = []; // Define searchResults array
+
+      const searchButton = document.getElementById('search-button');
+      searchButton.addEventListener('click', () => {
+        const searchTerm = document.getElementById('search-input').value;
+        const table = document.getElementById('table');
+        
+document.getElementById('data-show-msg').innerHTML="SHOWING DATA OF SEARCH RESULT FROM UPLOADED FILE"
+        createExcelButton.style.display = 'block';
+        
+          // Clear previous search results
+  searchResults.length = 0;
+  
+  
+        for (const row of table.rows) {
+          let found = false;
+          for (const cell of row.cells) {
+            if (cell.innerText.includes(searchTerm)) {
+              found = true;
+              break;
+            }
+          }
+          row.style.display = found ? '' : 'none';
+          
+              // If the row matches the search term, add it to the search results array
+    if (found) {
+      const rowData = [];
+      for (const cell of row.cells) {
+        rowData.push(cell.innerText);
+      }
+      searchResults.push(rowData);
+    }
+          
+        }
+      });
+
+      const fileInput = document.getElementById('file-input');
+      fileInput.addEventListener('change', handleFile);
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      // create a new file
+      
+      const createExcelButton = document.querySelector('#create-excel-button');
+createExcelButton.addEventListener('click', function() {
+  // Create a new Excel workbook and worksheet
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(searchResults);
+
+  // Add the worksheet to the workbook
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Search Results');
+
+  // Save the workbook as an Excel file
+  const filename = 'search_results.xlsx';
+  XLSX.writeFile(workbook, filename);
+});
+      
+      
+      
+      
+      
+      
+    </script>
+  </body>
+</html>
+
